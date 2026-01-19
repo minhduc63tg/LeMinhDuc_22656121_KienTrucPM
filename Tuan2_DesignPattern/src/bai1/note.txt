@@ -1,0 +1,7 @@
+State Pattern giúp quản lý hành vi theo trạng thái đơn hàng, tránh if-else phức tạp.
+
+Strategy Pattern cho phép thay đổi cách vận chuyển linh hoạt khi chạy chương trình.
+
+Decorator Pattern giúp mở rộng chức năng đơn hàng (gói quà, bảo hiểm) mà không sửa code gốc.
+
+Hệ thống dễ mở rộng, tuân thủ Open–Closed Principle.
