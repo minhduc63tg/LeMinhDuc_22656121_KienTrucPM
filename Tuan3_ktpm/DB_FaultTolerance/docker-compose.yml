@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  db_primary:
+    image: mysql:8.0
+    container_name: mysql_primary
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: testdb
+    # Thay thế file cnf bằng command trực tiếp
+    command: ["mysqld", "--server-id=1", "--log-bin=mysql-bin", "--binlog-format=ROW"]
+    ports:
+      - "3306:3306"
+
+  db_replica:
+    image: mysql:8.0
+    container_name: mysql_replica
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+    command: ["mysqld", "--server-id=2"]
+    ports:
+      - "3307:3306"
+    depends_on:
+      - db_primary
