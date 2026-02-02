@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package product;
+
+service ProductService {
+  rpc GetProducts (Empty) returns (ProductList);
+  rpc GetProduct (ProductRequest) returns (Product);
+  rpc GetProductsByCategory (CategoryRequest) returns (ProductList);
+  rpc CreateProduct (Product) returns (Product);
+  rpc UpdateProduct (Product) returns (Product);
+  rpc DeleteProduct (ProductRequest) returns (DeleteResponse);
+  
+  rpc GetOrders (Empty) returns (OrderList);
+  rpc GetOrderDetails (OrderRequest) returns (OrderDetails);
+  
+  rpc GetCustomer (CustomerRequest) returns (CustomerDetails);
+  
+  rpc GetStats (Empty) returns (Stats);
+}
+
+message Empty {}
+
+message Product {
+  int32 id = 1;
+  string name = 2;
+  int32 price = 3;
+  string category = 4;
+  int32 stock = 5;
+  string description = 6;
+}
+
+message ProductList {
+  repeated Product products = 1;
+  int32 count = 2;
+}
+
+message ProductRequest {
+  int32 id = 1;
+}
+
+message CategoryRequest {
+  string category = 1;
+}
+
+message DeleteResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message Order {
+  int32 id = 1;
+  int32 customerId = 2;
+  int32 productId = 3;
+  int32 quantity = 4;
+  int32 totalPrice = 5;
+  string status = 6;
+  string createdAt = 7;
+}
+
+message OrderList {
+  repeated Order orders = 1;
+  int32 count = 2;
+}
+
+message OrderRequest {
+  int32 id = 1;
+}
+
+message Customer {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+  string phone = 4;
+}
+
+message OrderDetails {
+  int32 id = 1;
+  int32 customerId = 2;
+  int32 productId = 3;
+  int32 quantity = 4;
+  int32 totalPrice = 5;
+  string status = 6;
+  string createdAt = 7;
+  Customer customer = 8;
+  Product product = 9;
+}
+
+message CustomerRequest {
+  int32 id = 1;
+}
+
+message CustomerDetails {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+  string phone = 4;
+  repeated Order orders = 5;
+}
+
+message Stats {
+  string api = 1;
+  int32 totalRequests = 2;
+  string averageResponseTime = 3;
+}

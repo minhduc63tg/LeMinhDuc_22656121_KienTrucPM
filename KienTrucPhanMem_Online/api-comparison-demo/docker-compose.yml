@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  rest-api:
+    build: ./rest-api
+    container_name: rest-api
+    ports:
+      - "3001:3001"
+    networks:
+      - api-network
+    command: npm start
+
+  graphql-api:
+    build: ./graphql-api
+    container_name: graphql-api
+    ports:
+      - "3002:3002"
+    networks:
+      - api-network
+    command: npm start
+
+  grpc-api:
+    build: ./grpc-api
+    container_name: grpc-api
+    ports:
+      - "50051:50051"
+    networks:
+      - api-network
+    command: npm start
+
+networks:
+  api-network:
+    driver: bridge
