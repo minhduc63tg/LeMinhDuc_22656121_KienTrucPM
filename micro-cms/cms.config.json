@@ -1,0 +1,24 @@
+{
+  "name": "My CMS",
+  "version": "1.0.0",
+  "plugins": {
+    "cms-auth": {
+      "enabled": true,
+      "jwtSecret": "change-me-in-production",
+      "tokenExpiry": "7d"
+    },
+    "cms-blog": {
+      "enabled": true,
+      "postsPerPage": 10,
+      "allowComments": true
+    },
+    "cms-media": {
+      "enabled": true,
+      "maxFileSize": "10mb",
+      "uploadPath": "./uploads"
+    },
+    "cms-seo": {
+      "enabled": false
+    }
+  }
+}
