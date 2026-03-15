@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microkernel CMS — Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap');
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --border: #1e1e2e;
+            --accent: #7c6af7;
+            --accent2: #f7c948;
+            --accent3: #48f7a8;
+            --red: #f74860;
+            --text: #e0dff5;
+            --muted: #6b6a8a;
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'Syne', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh;
+        }
+
+        /* HEADER */
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            font-size: 13px;
+            font-family: var(--mono);
+            font-weight: 600;
+            color: var(--accent);
+            background: rgba(124, 106, 247, 0.1);
+            border: 1px solid rgba(124, 106, 247, 0.3);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--muted);
+            font-size: 13px;
+            margin-left: auto;
+            font-family: var(--mono);
+        }
+
+        /* LAYOUT */
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            height: calc(100vh - 65px);
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            border-right: 1px solid var(--border);
+            padding: 24px 16px;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 28px;
+        }
+
+        .sidebar-label {
+            font-size: 10px;
+            font-family: var(--mono);
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            padding: 0 8px;
+        }
+
+        .plugin-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plugin-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .plugin-card:hover {
+            border-color: var(--accent);
+        }
+
+        .plugin-card:hover::before {
+            opacity: 1;
+        }
+
+        .plugin-card .name {
+            font-size: 13px;
+            font-weight: 700;
+            font-family: var(--mono);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plugin-card .desc {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+            font-family: var(--mono);
+        }
+
+        .badge {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-family: var(--mono);
+        }
+
+        .badge-active {
+            background: rgba(72, 247, 168, 0.15);
+            color: var(--accent3);
+        }
+
+        .badge-hook {
+            background: rgba(247, 201, 72, 0.15);
+            color: var(--accent2);
+        }
+
+        .badge-service {
+            background: rgba(124, 106, 247, 0.15);
+            color: var(--accent);
+        }
+
+        .hook-item {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+            padding: 6px 10px;
+            border-radius: 4px;
+            background: var(--surface);
+            margin-bottom: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .hook-item span {
+            color: var(--accent2);
+        }
+
+        /* MAIN */
+        .main {
+            overflow-y: auto;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+        }
+
+        .tab {
+            font-size: 13px;
+            font-family: var(--mono);
+            font-weight: 600;
+            padding: 16px 20px;
+            cursor: pointer;
+            color: var(--muted);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.15s;
+        }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--text);
+        }
+
+        .panel {
+            display: none;
+            padding: 24px;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* PLAYGROUND */
+        .playground-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .editor-label {
+            font-size: 11px;
+            font-family: var(--mono);
+            color: var(--muted);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 13px;
+            padding: 16px;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.15s;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .output-box {
+            min-height: 180px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .output-box h1 {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--accent2);
+        }
+
+        .output-box h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--accent);
+        }
+
+        .output-box h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .output-box code {
+            background: rgba(124, 106, 247, 0.2);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--accent);
+        }
+
+        .output-box strong {
+            color: var(--accent3);
+        }
+
+        .output-box a {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        .btn {
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 24px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #9580ff;
+        }
+
+        .token-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .token-chip {
+            font-family: var(--mono);
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            transition: all 0.15s;
+        }
+
+        .token-chip:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .token-chip.active {
+            border-color: var(--accent3);
+            color: var(--accent3);
+            background: rgba(72, 247, 168, 0.1);
+        }
+
+        .info-box {
+            background: rgba(124, 106, 247, 0.08);
+            border: 1px solid rgba(124, 106, 247, 0.2);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 12px;
+        }
+
+        .info-box strong {
+            color: var(--accent);
+        }
+
+        /* DIAGRAM */
+        .arch-diagram {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+        }
+
+        .arch-diagram svg {
+            width: 100%;
+            max-width: 680px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* LOG */
+        .log-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: var(--mono);
+            font-size: 12px;
+            line-height: 1.8;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-line {
+            padding: 2px 0;
+        }
+
+        .log-kernel {
+            color: var(--accent);
+        }
+
+        .log-plugin {
+            color: var(--accent3);
+        }
+
+        .log-error {
+            color: var(--red);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card .num {
+            font-size: 32px;
+            font-weight: 800;
+            font-family: var(--mono);
+            color: var(--accent);
+        }
+
+        .stat-card .label {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+            font-family: var(--mono);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #authStatus {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-family: var(--mono);
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--muted);
+        }
+
+        .dot.green {
+            background: var(--accent3);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <span class="logo">μKernel</span>
+        <h1>Plugin-based CMS</h1>
+        <p id="serverTime">loading...</p>
+    </header>
+
+    <div class="container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-label">Plugins</div>
+                <div id="pluginList">
+                    <div class="plugin-card">
+                        <div class="name">⏳ loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Hook Pipeline</div>
+                <div id="hookList"></div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Services</div>
+                <div id="serviceList"></div>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('playground')">Playground</div>
+                <div class="tab" onclick="switchTab('architecture')">Architecture</div>
+                <div class="tab" onclick="switchTab('logs')">Logs</div>
+                <div class="tab" onclick="switchTab('analytics')">Analytics</div>
+            </div>
+
+            <!-- PLAYGROUND -->
+            <div class="panel active" id="tab-playground">
+                <div style="margin-bottom: 16px;">
+                    <div class="editor-label">Auth Token (chọn để giả lập user)</div>
+                    <div class="token-row">
+                        <span class="token-chip" onclick="setToken('')">Anonymous</span>
+                        <span class="token-chip" onclick="setToken('token-guest-789')">Guest Token</span>
+                        <span class="token-chip" onclick="setToken('token-editor-456')">Editor Token</span>
+                        <span class="token-chip active" onclick="setToken('token-admin-123')">Admin Token</span>
+                    </div>
+                    <div id="authStatus"><span class="dot green"></span> Admin — token: token-admin-123</div>
+                </div>
+
+                <div class="playground-grid">
+                    <div>
+                        <div class="editor-label">Markdown Input</div>
+                        <textarea id="mdInput"># Xin chào Microkernel!
+
+## Cách hoạt động
+
+Plugin **markdown-renderer** sẽ parse text này.
+
+Plugin *auth* đã xác thực bạn.
+
+Plugin `analytics` đang đếm lượt xem.
+
+[Xem docs](https://example.com)</textarea>
+                    </div>
+                    <div>
+                        <div class="editor-label">HTML Output (sau khi qua pipeline)</div>
+                        <div class="output-box" id="mdOutput">← Nhấn Render để xem kết quả</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="runRender()">▶ Chạy Pipeline</button>
+
+                <div class="info-box" id="pipelineInfo" style="display:none">
+                    <strong>Pipeline thực thi:</strong><br>
+                    <span id="pipelineDetail"></span>
+                </div>
+            </div>
+
+            <!-- ARCHITECTURE -->
+            <div class="panel" id="tab-architecture">
+                <div class="arch-diagram">
+                    <svg viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg"
+                        font-family="JetBrains Mono, monospace">
+                        <defs>
+                            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                <path d="M0,0 L0,6 L8,3 z" fill="#7c6af7" />
+                            </marker>
+                        </defs>
+
+                        <!-- Background Kernel -->
+                        <rect x="180" y="160" width="340" height="120" rx="12" fill="rgba(124,106,247,0.08)"
+                            stroke="#7c6af7" stroke-width="1.5" stroke-dasharray="6,3" />
+                        <text x="350" y="185" text-anchor="middle" fill="#7c6af7" font-size="11" font-weight="600"
+                            letter-spacing="2">MICROKERNEL (CORE)</text>
+
+                        <!-- Kernel internals -->
+                        <rect x="198" y="195" width="90" height="32" rx="5" fill="rgba(124,106,247,0.2)"
+                            stroke="#7c6af7" stroke-width="1" />
+                        <text x="243" y="215" text-anchor="middle" fill="#a090ff" font-size="10">Hook System</text>
+
+                        <rect x="303" y="195" width="90" height="32" rx="5" fill="rgba(124,106,247,0.2)"
+                            stroke="#7c6af7" stroke-width="1" />
+                        <text x="348" y="215" text-anchor="middle" fill="#a090ff" font-size="10">Service Registry</text>
+
+                        <rect x="408" y="195" width="90" height="32" rx="5" fill="rgba(124,106,247,0.2)"
+                            stroke="#7c6af7" stroke-width="1" />
+                        <text x="453" y="215" text-anchor="middle" fill="#a090ff" font-size="10">Plugin Manager</text>
+
+                        <!-- Kernel center label -->
+                        <text x="350" y="258" text-anchor="middle" fill="#6b6a8a" font-size="10">kernel.on() ·
+                            kernel.emit() · kernel.getService()</text>
+
+                        <!-- Plugins -->
+                        <!-- Auth -->
+                        <rect x="40" y="60" width="140" height="72" rx="8" fill="#12121a" stroke="#f7c948"
+                            stroke-width="1.5" />
+                        <text x="110" y="85" text-anchor="middle" fill="#f7c948" font-size="11"
+                            font-weight="700">auth</text>
+                        <text x="110" y="102" text-anchor="middle" fill="#6b6a8a" font-size="9">on:
+                            request:incoming</text>
+                        <text x="110" y="116" text-anchor="middle" fill="#6b6a8a" font-size="9">provides: auth</text>
+
+                        <!-- Analytics -->
+                        <rect x="280" y="60" width="140" height="72" rx="8" fill="#12121a" stroke="#48f7a8"
+                            stroke-width="1.5" />
+                        <text x="350" y="85" text-anchor="middle" fill="#48f7a8" font-size="11"
+                            font-weight="700">analytics</text>
+                        <text x="350" y="102" text-anchor="middle" fill="#6b6a8a" font-size="9">on:
+                            request:incoming</text>
+                        <text x="350" y="116" text-anchor="middle" fill="#6b6a8a" font-size="9">on:
+                            content:render</text>
+
+                        <!-- Markdown -->
+                        <rect x="520" y="60" width="150" height="72" rx="8" fill="#12121a" stroke="#f748a0"
+                            stroke-width="1.5" />
+                        <text x="595" y="85" text-anchor="middle" fill="#f748a0" font-size="11"
+                            font-weight="700">markdown-renderer</text>
+                        <text x="595" y="102" text-anchor="middle" fill="#6b6a8a" font-size="9">on:
+                            content:render</text>
+                        <text x="595" y="116" text-anchor="middle" fill="#6b6a8a" font-size="9">provides:
+                            renderer</text>
+
+                        <!-- Arrows plugins → kernel -->
+                        <line x1="110" y1="132" x2="240" y2="195" stroke="#7c6af7" stroke-width="1.2"
+                            marker-end="url(#arr)" opacity="0.6" />
+                        <line x1="350" y1="132" x2="350" y2="193" stroke="#7c6af7" stroke-width="1.2"
+                            marker-end="url(#arr)" opacity="0.6" />
+                        <line x1="595" y1="132" x2="460" y2="195" stroke="#7c6af7" stroke-width="1.2"
+                            marker-end="url(#arr)" opacity="0.6" />
+
+                        <!-- Server box -->
+                        <rect x="250" y="340" width="200" height="50" rx="8" fill="#12121a" stroke="#e0dff5"
+                            stroke-width="1" />
+                        <text x="350" y="360" text-anchor="middle" fill="#e0dff5" font-size="11"
+                            font-weight="700">server.js</text>
+                        <text x="350" y="378" text-anchor="middle" fill="#6b6a8a" font-size="9">register() → boot() →
+                            listen()</text>
+
+                        <line x1="350" y1="340" x2="350" y2="282" stroke="#7c6af7" stroke-width="1.2"
+                            marker-end="url(#arr)" opacity="0.8" />
+
+                        <!-- Pipeline flow label -->
+                        <text x="350" y="425" text-anchor="middle" fill="#6b6a8a"
+                            font-size="10">emit("request:incoming") → emit("content:render") → response</text>
+                        <text x="350" y="445" text-anchor="middle" fill="#7c6af7" font-size="10"
+                            font-weight="600">Plugin không gọi nhau trực tiếp — chỉ qua Kernel!</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- LOGS -->
+            <div class="panel" id="tab-logs">
+                <div style="margin-bottom: 12px; display:flex; align-items:center; gap:12px;">
+                    <span style="font-family:var(--mono);font-size:13px;font-weight:700;">Kernel Logs</span>
+                    <button class="btn btn-primary" style="padding:6px 16px;font-size:12px"
+                        onclick="refreshLogs()">Refresh</button>
+                </div>
+                <div class="log-container" id="logContainer">Loading...</div>
+            </div>
+
+            <!-- ANALYTICS -->
+            <div class="panel" id="tab-analytics">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="num" id="statPageViews">—</div>
+                        <div class="label">Page Views</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="num" id="statRenders">—</div>
+                        <div class="label">Content Renders</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="num" id="statTotal">—</div>
+                        <div class="label">Total Events</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="margin-bottom:16px" onclick="refreshAnalytics()">Refresh
+                    Stats</button>
+                <div class="info-box">
+                    <strong>Plugin analytics</strong> hoạt động hoàn toàn độc lập — nó không biết gì về markdown hay
+                    auth.<br>
+                    Chỉ lắng nghe hook <strong>request:incoming</strong> và <strong>content:render</strong> từ kernel.
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentToken = 'token-admin-123';
+
+        // ── INIT ──
+        window.addEventListener('load', () => {
+            loadStatus();
+            setInterval(() => {
+                document.getElementById('serverTime').textContent = new Date().toLocaleTimeString('vi-VN');
+            }, 1000);
+        });
+
+        // ── STATUS ──
+        async function loadStatus() {
+            const data = await fetch('/api/status').then(r => r.json());
+
+            // Plugins
+            const pluginList = document.getElementById('pluginList');
+            pluginList.innerHTML = data.plugins.map(p => `
+      <div class="plugin-card">
+        <div class="name">
+          ${p.name}
+          <span class="badge badge-active">${p.status}</span>
+        </div>
+        <div class="desc">v${p.version} — ${p.description}</div>
+      </div>
+    `).join('');
+
+            // Hooks
+            document.getElementById('hookList').innerHTML = data.hooks.map(h => `
+      <div class="hook-item"><span>⚡</span> ${h}</div>
+    `).join('');
+
+            // Services
+            document.getElementById('serviceList').innerHTML = data.services.map(s => `
+      <div class="hook-item"><span class="badge badge-service" style="margin-right:6px">svc</span>${s}</div>
+    `).join('');
+
+            // Logs
+            renderLogs(data.logs);
+        }
+
+        // ── TABS ──
+        function switchTab(name) {
+            document.querySelectorAll('.tab').forEach((t, i) => {
+                t.classList.toggle('active', ['playground', 'architecture', 'logs', 'analytics'][i] === name);
+            });
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+
+            if (name === 'logs') refreshLogs();
+            if (name === 'analytics') refreshAnalytics();
+        }
+
+        // ── RENDER ──
+        function setToken(token) {
+            currentToken = token;
+            document.querySelectorAll('.token-chip').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const authStatus = document.getElementById('authStatus');
+            if (!token) {
+                authStatus.innerHTML = '<span class="dot"></span> Anonymous';
+            } else {
+                const names = { 'token-admin-123': 'Admin', 'token-editor-456': 'Editor', 'token-guest-789': 'Guest' };
+                authStatus.innerHTML = `<span class="dot green"></span> ${names[token]} — token: ${token}`;
+            }
+        }
+
+        async function runRender() {
+            const text = document.getElementById('mdInput').value;
+            const headers = { 'Content-Type': 'application/json' };
+            if (currentToken) headers['Authorization'] = 'Bearer ' + currentToken;
+
+            const data = await fetch('/api/render?text=' + encodeURIComponent(text), { headers }).then(r => r.json());
+
+            document.getElementById('mdOutput').innerHTML = data.output;
+
+            const info = document.getElementById('pipelineInfo');
+            const detail = document.getElementById('pipelineDetail');
+            info.style.display = 'block';
+
+            const steps = [
+                `1️⃣  <strong>emit("request:incoming")</strong> → auth nhận: xác thực token → analytics ghi nhận page view`,
+                `2️⃣  <strong>emit("content:render")</strong> → analytics ghi nhận → markdown-renderer parse Markdown → HTML`,
+                `3️⃣  <strong>Response</strong>: user = <strong>${data.user ? data.user.name + ' (' + data.user.role + ')' : 'anonymous'}</strong>`,
+            ];
+            detail.innerHTML = steps.join('<br>');
+
+            // Refresh sidebar
+            loadStatus();
+        }
+
+        // ── LOGS ──
+        async function refreshLogs() {
+            const data = await fetch('/api/status').then(r => r.json());
+            renderLogs(data.logs);
+        }
+
+        function renderLogs(logs) {
+            document.getElementById('logContainer').innerHTML = logs.map(l => {
+                let cls = 'log-line';
+                if (l.includes('[KERNEL]')) cls += ' log-kernel';
+                else if (l.includes('[markdown') || l.includes('[auth') || l.includes('[analytics')) cls += ' log-plugin';
+                else if (l.includes('✗') || l.includes('Error')) cls += ' log-error';
+                return `<div class="${cls}">${l}</div>`;
+            }).join('');
+        }
+
+        // ── ANALYTICS ──
+        async function refreshAnalytics() {
+            const data = await fetch('/api/analytics').then(r => r.json());
+            document.getElementById('statPageViews').textContent = data.pageViews;
+            document.getElementById('statRenders').textContent = data.contentRenders;
+            document.getElementById('statTotal').textContent = data.totalEvents;
+        }
+    </script>
+</body>
+
+</html>
