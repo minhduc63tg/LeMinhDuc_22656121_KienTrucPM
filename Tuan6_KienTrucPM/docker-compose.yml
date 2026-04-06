@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  # 1. Service Database (Postgres)
+  db:
+    build: ./pull-image   # Trỏ vào thư mục có Dockerfile của Postgres
+    environment:
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432"
+    healthcheck: # Đảm bảo DB sẵn sàng trước khi App kết nối
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Service App (Node.js)
+  app:
+    build: .             # Trỏ vào Dockerfile (Multi-stage) ở thư mục gốc
+    ports:
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy # Chờ db "khỏe mạnh" rồi mới chạy app
+    environment:
+      NODE_ENV: production

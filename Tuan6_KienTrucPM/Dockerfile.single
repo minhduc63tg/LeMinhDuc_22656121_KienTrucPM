@@ -1,0 +1,13 @@
+# Sử dụng image đầy đủ (không phải bản alpine)
+FROM node:18
+
+WORKDIR /app
+
+# Copy toàn bộ mọi thứ vào (bao gồm cả node_modules nếu bạn chưa có .dockerignore)
+COPY . .
+
+# Cài đặt tất cả (không phân biệt production)
+RUN npm install
+
+EXPOSE 3000
+CMD ["node", "index.js"]
