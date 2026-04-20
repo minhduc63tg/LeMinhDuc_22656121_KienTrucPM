@@ -1,0 +1,15 @@
+{
+  "name": "movie-ticket-eda",
+  "version": "1.0.0",
+  "description": "``` ┌─────────────┐     REST      ┌──────────────────┐ │   Frontend  │ ──────────►  │   Booking Service │ ──► PUBLISH: BOOKING_CREATED │  (React)    │              └──────────────────┘ │  Port 5173  │     REST      ┌──────────────────┐ │             │ ──────────►  │   User Service    │  (REST thuần) │             │              └──────────────────┘ │             │     REST      ┌──────────────────┐ │             │ ──────────►  │   Movie Service   │  (REST thuần) └─────────────┘              └──────────────────┘",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^1.0.3"
+  }
+}
