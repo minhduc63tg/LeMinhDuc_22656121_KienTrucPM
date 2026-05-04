@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  # 1. Cấu hình Redis (In-Memory Space)
+  redis-server:
+    image: redis:7-alpine
+    container_name: flashsale-redis
+    ports:
+      - "6379:6379"
+    restart: always
+    # Thêm command này nếu muốn Redis chạy ở chế độ tối ưu bộ nhớ cho cache
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+  # 2. Cấu hình RabbitMQ (Message Queue có sẵn UI quản lý)
+  rabbitmq-server:
+    image: rabbitmq:3-management-alpine
+    container_name: flashsale-rabbitmq
+    ports:
+      - "5672:5672" # Port giao tiếp của MQ
+      - "15672:15672" # Port của giao diện quản trị Web UI
+    restart: always
+
+  # 3. Cấu hình MariaDB (Database chính)
+  mariadb-server:
+    image: mariadb:latest
+    container_name: flashsale-mariadb
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: secret
+      MARIADB_DATABASE: flashsale_db
+    restart: always
+    volumes:
+      - mariadb_data:/var/lib/mysql # Lưu trữ data để không bị mất khi tắt Docker
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Tự động tạo bảng & data mẫu
+
+volumes:
+  mariadb_data:
